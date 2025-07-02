@@ -1,4 +1,6 @@
-BOARD := nrf52840dk_nrf52840
+BOARD54 := nrf54l15dk/nrf54l15/cpuapp
+BOARD52 := nrf52840dk/nrf52840
+
 PY := python3 
 
 #device flash map
@@ -11,7 +13,7 @@ MAX_PATCH_SIZE := 0x6000
 PATCH_HEADER_SIZE := 0x8 
 
 #relevant directories that the user might have to update
-BOOT_DIR := bootloader/mcuboot/boot/zephyr#bootloader image location
+BOOT_DIR := app/build/mcuboot/zephyr#bootloader image location
 BUILD_DIR := zephyr/build#zephyr build directory
 KEY_PATH := bootloader/mcuboot/root-rsa-2048.pem#key for signing images
 
@@ -30,14 +32,15 @@ SLOT1_PATH := $(DUMP_DIR)/slot1.bin
 #commands + flags and scripts
 PYFLASH := pyocd flash -e sector 
 DETOOLS := detools create_patch --compression heatshrink
-BUILD_APP := west build -p auto -b $(BOARD) -d $(BUILD_DIR)
+BUILD_APP52 := west build -p -b $(BOARD52) --sysbuild
+BUILD_APP54 := west build -p -b $(BOARD54) --sysbuild
 SIGN := west sign -t imgtool -d $(BUILD_DIR)
 IMGTOOL_SETTINGS := --version 1.0 --header-size $(HEADER_SIZE) \
                     --slot-size $(SLOT_SIZE) --align 4 --key $(KEY_PATH)
 PAD_SCRIPT := $(PY) scripts/pad_patch.py
 DUMP_SCRIPT := $(PY) scripts/jflashrw.py read
 SET_SCRIPT := $(PY) scripts/set_current.py 
-
+OPTIONS := chip_erase_mode=ERASE_RANGES_TOUCHED_BY_FIRMWARE,verify=VERIFY_READ
 all: build-boot flash-boot build flash-image
 
 help:
@@ -58,39 +61,55 @@ help:
 	@echo "clean              Remove all generated binaries."
 	@echo "tools              Install used tools."
 
-build:
-	@echo "Building firmware image..."	
-	mkdir -p $(BUILD_DIR)
+build-source-and-flash54:
+	@echo "Building firmware source image for nRF54L15..."	
 	mkdir -p $(IMG_DIR)
-	$(BUILD_APP) app
-	$(SIGN) -B $(TARGET_PATH) -- $(IMGTOOL_SETTINGS)
+	cd app/ && $(BUILD_APP54)
+	west flash --erase --build-dir app/build
+	mv app/build/app/zephyr/zephyr.signed.bin $(SOURCE_PATH)
 
-build-boot:
-	@echo "Building bootloader..."	
-	mkdir -p $(BOOT_DIR)/build
-	cmake -B $(BOOT_DIR)/build -GNinja -DBOARD=$(BOARD) -S $(BOOT_DIR)
-	ninja -C $(BOOT_DIR)/build
-	
-flash-image:
-	@echo "Flashing latest source image to slot 0..."
-	$(SET_SCRIPT) $(TARGET_PATH) $(SOURCE_PATH)
-	$(PYFLASH) -a $(SLOT0_OFFSET) -t nrf52840 $(SOURCE_PATH)
+build-target54:
+	@echo "Building target firmware image for nRF54L15..."	
+	cd app/ && $(BUILD_APP54)
+	mv app/build/app/zephyr/zephyr.signed.bin $(TARGET_PATH)
+
+build-source-and-flash52:
+	@echo "Building firmware source image for nRF52840..."	
+	mkdir -p $(IMG_DIR)
+	cd app/ && $(BUILD_APP52)
+	west flash --erase --build-dir app/build
+	mv app/build/app/zephyr/zephyr.signed.bin $(SOURCE_PATH)
+
+build-target52:
+	@echo "Building target firmware image for nRF52840..."	
+	cd app/ && $(BUILD_APP52)
+	mv app/build/app/zephyr/zephyr.signed.bin $(TARGET_PATH)
 
 flash-boot:
 	@echo "Flashing latest bootloader image..."	
-	ninja -C $(BOOT_DIR)/build flash
+	nrfutil device program --firmware $(BOOT_DIR)/zephyr.bin --options ${OPTIONS}
 
 flash-patch:
 	@echo "Flashing latest patch to patch partition..."
-	$(PYFLASH) -a $(PATCH_OFFSET) -t nrf52840 $(PATCH_PATH)
+	nrfutil device program --firmware $(PATCH_DIR)/patch.hex --options chip_erase_mode=ERASE_RANGES_TOUCHED_BY_FIRMWARE
 	$(SET_SCRIPT) $(TARGET_PATH) $(SOURCE_PATH)
+	nrfutil device reset
 	
-create-patch:
+create-patch-nrf52:
 	@echo "Creating patch..."
 	mkdir -p $(PATCH_DIR)
 	rm -f $(PATCH_PATH)
 	$(DETOOLS) $(SOURCE_PATH) $(TARGET_PATH) $(PATCH_PATH)
 	$(PAD_SCRIPT) $(PATCH_PATH) $(MAX_PATCH_SIZE) $(PATCH_HEADER_SIZE)
+	arm-none-eabi-objcopy -I binary -O ihex --change-addresses 0x000F8000 $(PATCH_PATH) $(PATCH_DIR)/patch.hex
+
+create-patch-nrf54:
+	@echo "Creating patch..."
+	mkdir -p $(PATCH_DIR)
+	rm -f $(PATCH_PATH)
+	$(DETOOLS) $(SOURCE_PATH) $(TARGET_PATH) $(PATCH_PATH)
+	$(PAD_SCRIPT) $(PATCH_PATH) $(MAX_PATCH_SIZE) $(PATCH_HEADER_SIZE)
+	arm-none-eabi-objcopy -I binary -O ihex --change-addresses 0x0015C000 $(PATCH_PATH) $(PATCH_DIR)/patch.hex
 	
 connect:
 	@echo "Connecting to device console.."
@@ -118,9 +137,9 @@ clean:
 
 tools:
 	@echo "Installing tools..."
-	pip3 install --user detools
-	pip3 install --user -r bootloader/mcuboot/scripts/requirements.txt
-	pip3 install --user pyocd
-	pip3 install --user pynrfjprog
-	pip3 install --user imgtool
+	pip3 install detools
+	pip3 install -r bootloader/mcuboot/scripts/requirements.txt
+	pip3 install pyocd
+	pip3 install pynrfjprog
+	pip3 install imgtool
 	@echo "Done"
