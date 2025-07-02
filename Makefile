@@ -137,9 +137,15 @@ clean:
 
 tools:
 	@echo "Installing tools..."
+	pip3 install west
 	pip3 install detools
-	pip3 install -r bootloader/mcuboot/scripts/requirements.txt
 	pip3 install pyocd
 	pip3 install pynrfjprog
 	pip3 install imgtool
+	@echo "Done"
+
+extra-tools:
+	@echo "Installing extra tools..."
+	pip3 install -r zephyr/scripts/requirements.txt
+	pip3 install -r bootloader/mcuboot/scripts/requirements.txt
 	@echo "Done"
