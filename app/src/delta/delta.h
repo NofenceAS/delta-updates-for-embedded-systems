@@ -7,23 +7,23 @@
 #ifndef DELTA_H
 #define DELTA_H
 
-#include <zephyr/kernel.h>
-#include <zephyr/sys/util.h>
+#include "../detools/detools.h"
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
-#include <zephyr/drivers/flash.h>
-#include <zephyr/storage/flash_map.h>
 #include <zephyr/dfu/mcuboot.h>
-#include <zephyr/sys/reboot.h>
-#include "../detools/detools.h"
+#include <zephyr/drivers/flash.h>
+#include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/storage/flash_map.h>
+#include <zephyr/sys/reboot.h>
+#include <zephyr/sys/util.h>
 
 /* IMAGE OFFSETS AND SIZES */
 #define PRIMARY_OFFSET FIXED_PARTITION_OFFSET(slot0_partition)
 #define PRIMARY_SIZE FIXED_PARTITION_SIZE(slot0_partition)
 #define SECONDARY_OFFSET FIXED_PARTITION_OFFSET(slot1_partition)
 #define SECONDARY_SIZE FIXED_PARTITION_SIZE(slot1_partition)
-#ifdef CONFIG_SB_CONFIG_PARTITION_MANAGER
+#ifdef CONFIG_PARTITION_MANAGER_ENABLED
 #define STORAGE_OFFSET FIXED_PARTITION_OFFSET(settings_storage)
 #define STORAGE_SIZE FIXED_PARTITION_SIZE(settings_storage)
 #else
@@ -38,32 +38,33 @@
 #define PAGE_SIZE 0x1000
 
 /* Error codes. */
-#define DELTA_OK                                          0
-#define DELTA_SLOT1_OUT_OF_MEMORY                        28
-#define DELTA_READING_PATCH_ERROR						 29
-#define DELTA_READING_SOURCE_ERROR						 30
-#define DELTA_WRITING_ERROR			                     31
-#define DELTA_SEEKING_ERROR								 32
-#define DELTA_CASTING_ERROR                              33
-#define DELTA_INVALID_BUF_SIZE							 34
-#define DELTA_CLEARING_ERROR							 35
-#define DELTA_NO_FLASH_FOUND							 36
-#define DELTA_PATCH_HEADER_ERROR                         37
+#define DELTA_OK 0
+#define DELTA_SLOT1_OUT_OF_MEMORY 28
+#define DELTA_READING_PATCH_ERROR 29
+#define DELTA_READING_SOURCE_ERROR 30
+#define DELTA_WRITING_ERROR 31
+#define DELTA_SEEKING_ERROR 32
+#define DELTA_CASTING_ERROR 33
+#define DELTA_INVALID_BUF_SIZE 34
+#define DELTA_CLEARING_ERROR 35
+#define DELTA_NO_FLASH_FOUND 36
+#define DELTA_PATCH_HEADER_ERROR 37
 
-/* FLASH MEMORY AND POINTERS TO CURRENT LOCATION OF BUFFERS AND END OF IMAGE AREAS.
+/* FLASH MEMORY AND POINTERS TO CURRENT LOCATION OF BUFFERS AND END OF IMAGE
+ * AREAS.
  * - "Patch" refers to the area containing the patch image.
  * - "From" refers to the area containing the source image.
  * - "To" refers to the area where the target image is to be placed.
  */
 struct flash_mem {
-	const struct device *device;
-	off_t patch_current;
-	off_t patch_end;
-	off_t from_current;
-	off_t from_end;
-	off_t to_current;
-	off_t to_end;
-	size_t write_buf;
+  const struct device *device;
+  off_t patch_current;
+  off_t patch_end;
+  off_t from_current;
+  off_t from_end;
+  off_t to_current;
+  off_t to_end;
+  size_t write_buf;
 };
 
 /* FUNCTION DECLARATIONS */
