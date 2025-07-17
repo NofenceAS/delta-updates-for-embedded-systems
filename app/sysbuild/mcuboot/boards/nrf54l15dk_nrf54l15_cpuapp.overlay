@@ -2,7 +2,7 @@
 	chosen {
 		zephyr,flash-controller = &rram_controller;
 		zephyr,flash = &cpuapp_rram;
-		zephyr,code-partition = &slot0_partition;
+		zephyr,code-partition = &boot_partition;
 		zephyr,sram = &cpuapp_sram;
 	};
 };

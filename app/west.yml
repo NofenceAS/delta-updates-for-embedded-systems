@@ -3,20 +3,15 @@ manifest:
     path: app
 
   defaults:
-    remote: zephyr-upstream
-  
+    remote: nrfconnect
+
   remotes:
-    - name: zephyr-upstream
-      url-base: https://github.com/zephyrproject-rtos
+    - name: nrfconnect
+      url-base: https://github.com/nrfconnect
 
   projects:
-    - name: zephyr
-      west-commands: scripts/west-commands.yml
-      revision: v4.1.0
-      import:
-        name-allowlist:
-          - cmsis
-          - hal_nordic
-          - segger
-          - mbedtls
-          - mcuboot
+    - name: nrf
+      remote: nrfconnect
+      repo-path: sdk-nrf
+      revision: main
+      import: true

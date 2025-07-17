@@ -26,7 +26,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Open connection to jlink
-    nrfjprog = API.API('NRF52')
+    nrfjprog = API.API('UNKNOWN')
     nrfjprog.open()
     try:
         nrfjprog.connect_to_emu_without_snr(jlink_speed_khz=JLINK_SPEED_KHZ)
