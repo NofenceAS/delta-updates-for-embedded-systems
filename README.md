@@ -71,6 +71,41 @@ In order to build and run the same experiment on nRF52840DK, just run the same m
 
     $ make build-source-and-flash54
 
+
+# Partition Manager
+
+Current partitions:
+
+    bootconf (0x4 - 4B): 
+    +-------------------------------+
+    | 0xffd080: bootconf (0x4 - 4B) |
+    +-------------------------------+
+
+    flash_primary (0x17d000 - 1524kB): 
+    +-------------------------------------------------+
+    | 0x0: mcuboot (0xc000 - 48kB)                    |
+    +---0xc000: mcuboot_primary (0xb4000 - 720kB)-----+
+    | 0xc000: mcuboot_pad (0x800 - 2kB)               |
+    +---0xc800: mcuboot_primary_app (0xb3800 - 718kB)-+
+    | 0xc800: app (0xb3800 - 718kB)                   |
+    +-------------------------------------------------+
+    | 0xc0000: mcuboot_secondary (0xb4000 - 720kB)    |
+    | 0x174000: settings_storage (0x9000 - 36kB)      |
+    +-------------------------------------------------+
+
+    otp (0x4fc - 1kB): 
+    +-----------------------------+
+    | 0xffd500: otp (0x4fc - 1kB) |
+    +-----------------------------+
+
+    sram_primary (0x40000 - 256kB): 
+    +--------------------------------------------+
+    | 0x20000000: sram_primary (0x40000 - 256kB) |
+    +--------------------------------------------+
+
+
+
+
 # Notable changes
 
 
