@@ -76,6 +76,7 @@ In order to build and run the same experiment on nRF52840DK, just run the same m
 
 | Date | Comment | Commit |
 | ------ | ------ | ------ |
+| **20250717**| Add support of nordic's partition manager + pm_static.yml | [8ae328d](https://github.com/NofenceAS/delta-updates-for-embedded-systems/commit/8ae328da3b92e1fe7ebeb358fc828bf9bb4c9094) |
 | **20250717**| Fixed delta.c delta_flash_write() function to make it more robust | [8aaca12](https://github.com/NofenceAS/delta-updates-for-embedded-systems/commit/8aaca124454c8514032f194353e868d2d3bbb03f) |
 | **20250717**| Switched and lifted to latest NCS (3.0.2) pointing to main | [3e82f39](https://github.com/NofenceAS/delta-updates-for-embedded-systems/commit/3e82f3909a341f6d0dddf46954b7c2fac2606d1b) |
 | **20250702**| Lifted to Zephyr v4.1 | [fc42013](https://github.com/NofenceAS/delta-updates-for-embedded-systems/commit/fc42013ed8c71f11e0b363b21d67e986e26dbbcc) |
