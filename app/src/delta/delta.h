@@ -7,6 +7,7 @@
 #ifndef DELTA_H
 #define DELTA_H
 
+#include <zephyr/kernel.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
@@ -22,8 +23,13 @@
 #define PRIMARY_SIZE FIXED_PARTITION_SIZE(slot0_partition)
 #define SECONDARY_OFFSET FIXED_PARTITION_OFFSET(slot1_partition)
 #define SECONDARY_SIZE FIXED_PARTITION_SIZE(slot1_partition)
+#ifdef CONFIG_SB_CONFIG_PARTITION_MANAGER
+#define STORAGE_OFFSET FIXED_PARTITION_OFFSET(settings_storage)
+#define STORAGE_SIZE FIXED_PARTITION_SIZE(settings_storage)
+#else
 #define STORAGE_OFFSET FIXED_PARTITION_OFFSET(storage_partition)
 #define STORAGE_SIZE FIXED_PARTITION_SIZE(storage_partition)
+#endif
 
 /* PATCH HEADER SIZE */
 #define HEADER_SIZE 0x8

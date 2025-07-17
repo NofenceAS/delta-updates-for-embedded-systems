@@ -11,48 +11,54 @@ LOG_MODULE_REGISTER(delta, LOG_LEVEL_DBG);
 /*
  *  IMAGE/FLASH MANAGEMENT
  */
-
-static int erase_page(struct flash_mem *flash, off_t offset)
-{
-	offset = offset - offset%PAGE_SIZE; /* find start of page */
-
-	if (flash_erase(flash->device, offset, PAGE_SIZE)) {
-		return -DELTA_CLEARING_ERROR;
-	}
-
-	return DELTA_OK;
-}
-
 static int delta_flash_write(void *arg_p,
-					const uint8_t *buf_p,
-					size_t size)
+                             const uint8_t *buf_p,
+                             size_t size)
 {
-	struct flash_mem *flash;
+    struct flash_mem *flash = (struct flash_mem *)arg_p;
 
-	flash = (struct flash_mem *)arg_p;
-	flash->write_buf += size;
+    if (!flash) {
+        LOG_ERR("delta_flash_write: null flash pointer\n");
+        return -DELTA_CASTING_ERROR;
+    }
 
-	if (flash->write_buf >= PAGE_SIZE) {
-		if (erase_page(flash, flash->to_current + (off_t) size)) {
-			return -DELTA_CLEARING_ERROR;
-		}
-		flash->write_buf = 0;
-	}
+    if ((flash->to_current + (off_t)size) > flash->to_end) {
+        LOG_ERR("delta_flash_write: OVERFLOW ERROR!\n");
+        return -DELTA_SLOT1_OUT_OF_MEMORY;
+    }
 
-	if (!flash) {
-		return -DELTA_CASTING_ERROR;
-	}
+    /* Optional debug dump of first few bytes */
+    char dbg_buf[64];
+    int dbg_len = MIN(size, 16);
+    int offset = 0;
+    for (int i = 0; i < dbg_len && offset < sizeof(dbg_buf) - 3; i++) {
+        offset += snprintk(&dbg_buf[offset], sizeof(dbg_buf) - offset, "%02X ", buf_p[i]);
+    }
+    dbg_buf[offset] = '\0';
 
-	if (flash_write(flash->device, flash->to_current, buf_p, size)) {
-		return -DELTA_WRITING_ERROR;
-	}
+    LOG_DBG("delta_flash_write: to=0x%08x size=%u data=%s",
+            (uint32_t)flash->to_current, (uint32_t)size, dbg_buf);
 
-	flash->to_current += (off_t) size;
-	if (flash->to_current >= flash->to_end) {
-		return -DELTA_SLOT1_OUT_OF_MEMORY;
-	}
+    /* Page-aligned erase as needed */
+    size_t page_offset = flash->to_current % PAGE_SIZE;
+    if (page_offset == 0) {
+        int ret = flash_erase(flash->device, flash->to_current, PAGE_SIZE);
+        if (ret) {
+            LOG_ERR("delta_flash_write: ERASE FAILED at 0x%08x\n",
+                   (uint32_t)flash->to_current);
+            return -DELTA_CLEARING_ERROR;
+        }
+        LOG_DBG("Erased flash page at 0x%08x", (uint32_t)flash->to_current);
+    }
 
-	return DELTA_OK;
+    if (flash_write(flash->device, flash->to_current, buf_p, size)) {
+        LOG_ERR("delta_flash_write: FLASH WRITE FAILED at 0x%08x\n",
+               (uint32_t)flash->to_current);
+        return -DELTA_WRITING_ERROR;
+    }
+
+    flash->to_current += (off_t)size;
+    return DELTA_OK;
 }
 
 static int delta_flash_from_read(void *arg_p,
@@ -154,18 +160,13 @@ static int delta_init_flash_mem(struct flash_mem *flash)
 
 static int delta_init(struct flash_mem *flash)
 {
-	int ret;
+    int ret = delta_init_flash_mem(flash);
+    if (ret) {
+        return ret;
+    }
 
-	ret = delta_init_flash_mem(flash);
-	if (ret) {
-		return ret;
-	}
-	ret = erase_page(flash, flash->to_current);
-	if (ret) {
-		return ret;
-	}
-
-	return DELTA_OK;
+    LOG_INF("delta_init: Initialized flash pointers.");
+    return DELTA_OK;
 }
 
 /*
