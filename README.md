@@ -115,5 +115,5 @@ Current partitions:
 | **20250717**| Fixed delta.c delta_flash_write() function to make it more robust | [8aaca12](https://github.com/NofenceAS/delta-updates-for-embedded-systems/commit/8aaca124454c8514032f194353e868d2d3bbb03f) |
 | **20250717**| Switched and lifted to latest NCS (3.0.2) pointing to main | [3e82f39](https://github.com/NofenceAS/delta-updates-for-embedded-systems/commit/3e82f3909a341f6d0dddf46954b7c2fac2606d1b) |
 | **20250702**| Lifted to Zephyr v4.1 | [fc42013](https://github.com/NofenceAS/delta-updates-for-embedded-systems/commit/fc42013ed8c71f11e0b363b21d67e986e26dbbcc) |
-| **20210927**| Patch header is now shorter (8 bytes compared to 24 bytes). Patch size is no longer a string. "NEWPATCH" has been shortened to "NEWP". | [cfa78347](https://gitlab.endian.se/thesis-projects/delta-updates-for-embedded-systems/-/commit/cfa78347cefd7b46330c46a17ffad75ccb58abee) |
 | **20230525**| Lifted to Zephyr v3.3 | [15a8689](https://github.com/saralinnealindh/delta-updates-for-embedded-systems/commit/15a86891df7f148e71a3ea23763e1cf1c0e8f3bb) |
+| **20210927**| Patch header is now shorter (8 bytes compared to 24 bytes). Patch size is no longer a string. "NEWPATCH" has been shortened to "NEWP". | [cfa78347](https://gitlab.endian.se/thesis-projects/delta-updates-for-embedded-systems/-/commit/cfa78347cefd7b46330c46a17ffad75ccb58abee) |
